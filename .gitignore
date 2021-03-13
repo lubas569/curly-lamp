@@ -1,0 +1,12 @@
+node_modules
+coverage
+azurite-testdrive
+.nyc_output
+dist
+typings
+debug.log
+*.vsix
+*.tgz
+__*
+*.env
+temp

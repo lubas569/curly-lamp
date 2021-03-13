@@ -1,0 +1,398 @@
+# Node.js
+# Build a general Node.js project with npm.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema
+
+trigger:
+  - master
+  - dev
+
+jobs:
+  - job: blobtestlinux
+    displayName: Blob Test Linux
+    pool:
+      vmImage: "ubuntu-16.04"
+    strategy:
+      matrix:
+        node_8_x:
+          node_version: 8.x
+        node_10_x:
+          node_version: 10.x
+        node_12_x:
+          node_version: 12.x
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: "$(node_version)"
+        displayName: "Install Node.js"
+
+      - script: |
+          npm ci
+        workingDirectory: "./"
+        displayName: "npm ci"
+
+      - script: |
+          npm run test:blob
+        workingDirectory: "./"
+        displayName: "npm run test:blob"
+        env: {}
+
+  - job: blobtestwin
+    displayName: Blob Test Windows
+    pool:
+      vmImage: "vs2017-win2016"
+    strategy:
+      matrix:
+        node_8_x:
+          node_version: 8.x
+        node_10_x:
+          node_version: 10.x
+        node_12_x:
+          node_version: 12.x
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: "$(node_version)"
+        displayName: "Install Node.js"
+
+      - script: |
+          npm ci
+        workingDirectory: "./"
+        displayName: "npm ci"
+
+      - script: |
+          npm run test:blob
+        workingDirectory: "./"
+        displayName: "npm run test:blob"
+        env: {}
+
+  - job: blobtestmac
+    displayName: Blob Test Mac
+    pool:
+      vmImage: "macOS-10.13"
+    strategy:
+      matrix:
+        node_8_x:
+          node_version: 8.x
+        node_10_x:
+          node_version: 10.x
+        node_12_x:
+          node_version: 12.x
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: "$(node_version)"
+        displayName: "Install Node.js"
+
+      - script: |
+          npm ci
+        workingDirectory: "./"
+        displayName: "npm ci"
+
+      - script: |
+          npm run test:blob
+        workingDirectory: "./"
+        displayName: "npm run test:blob"
+        env: {}
+
+  - job: blobtestmysql
+    displayName: Blob Test Mysql
+    pool:
+      vmImage: "ubuntu-16.04"
+    strategy:
+      matrix:
+        node_8_x:
+          node_version: 8.x
+        node_10_x:
+          node_version: 10.x
+        node_12_x:
+          node_version: 12.x
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: "$(node_version)"
+        displayName: "Install Node.js"
+
+      - script: |
+          npm ci
+        workingDirectory: "./"
+        displayName: "npm ci"
+
+      - script: |
+          docker run --name mysql -p 13306:3306 -e MYSQL_ROOT_PASSWORD=my-secret-pw -d mysql
+          sleep 60
+          docker exec mysql mysql -u root -pmy-secret-pw -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+          docker exec mysql mysql -u root -pmy-secret-pw -e "create database azurite_blob_test;"
+        workingDirectory: "./"
+        displayName: "Setup mysql docker instance"
+
+      - script: |
+          npm run test:blob:sql:ci
+        workingDirectory: "./"
+        displayName: "npm run test:blob"
+        env: {}
+
+  - job: queuetestlinux
+    displayName: Queue Test Linux
+    pool:
+      vmImage: "ubuntu-16.04"
+    strategy:
+      matrix:
+        node_8_x:
+          node_version: 8.x
+        node_10_x:
+          node_version: 10.x
+        node_12_x:
+          node_version: 12.x
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: "$(node_version)"
+        displayName: "Install Node.js"
+
+      - script: |
+          npm ci
+        workingDirectory: "./"
+        displayName: "npm ci"
+
+      - script: |
+          npm run test:queue
+        workingDirectory: "./"
+        displayName: "npm run test:queue"
+        env: {}
+
+  - job: queuetestwin
+    displayName: Queue Test Windows
+    pool:
+      vmImage: "vs2017-win2016"
+    strategy:
+      matrix:
+        node_8_x:
+          node_version: 8.x
+        node_10_x:
+          node_version: 10.x
+        node_12_x:
+          node_version: 12.x
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: "$(node_version)"
+        displayName: "Install Node.js"
+
+      - script: |
+          npm ci
+        workingDirectory: "./"
+        displayName: "npm ci"
+
+      - script: |
+          npm run test:queue
+        workingDirectory: "./"
+        displayName: "npm run test:queue"
+        env: {}
+
+  - job: queuetestmac
+    displayName: Queue Test Mac
+    pool:
+      vmImage: "macOS-10.13"
+    strategy:
+      matrix:
+        node_8_x:
+          node_version: 8.x
+        node_10_x:
+          node_version: 10.x
+        node_12_x:
+          node_version: 12.x
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: "$(node_version)"
+        displayName: "Install Node.js"
+
+      - script: |
+          npm ci
+        workingDirectory: "./"
+        displayName: "npm ci"
+
+      - script: |
+          npm run test:queue
+        workingDirectory: "./"
+        displayName: "npm run test:queue"
+        env: {}
+
+  - job: azuritenodejslinux
+    displayName: Azurite Linux
+    pool:
+      vmImage: "ubuntu-16.04"
+    strategy:
+      matrix:
+        node_8_x:
+          node_version: 8.x
+        node_10_x:
+          node_version: 10.x
+        node_12_x:
+          node_version: 12.x
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: "$(node_version)"
+        displayName: "Install Node.js"
+
+      - script: |
+          npm ci
+        workingDirectory: "./"
+        displayName: "npm ci"
+
+      - script: |
+          npm run lint
+        workingDirectory: "./"
+        displayName: "tslint"
+
+      - script: |
+          npm run validate:npmpack:linux_mac
+        workingDirectory: "./"
+        displayName: "Validate npm package installation"
+
+      - script: |
+          npm run vscode:pack
+        workingDirectory: "./"
+        displayName: "Validate Visual Studio Code extension package generation"
+
+      - script: |
+          sudo npm uninstall -g azurite
+          npm run build
+          sudo npm install -g
+          azurite -v
+          azurite-blob -v
+          azurite-queue -v
+        workingDirectory: "./"
+        displayName: "Validate npm global installation from GitHub code base"
+
+  - job: azuritenodejswin
+    displayName: Azurite Windows
+    pool:
+      vmImage: "vs2017-win2016"
+    strategy:
+      matrix:
+        node_8_x:
+          node_version: 8.x
+        node_10_x:
+          node_version: 10.x
+        node_12_x:
+          node_version: 12.x
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: "$(node_version)"
+        displayName: "Install Node.js"
+
+      - script: |
+          npm ci
+        workingDirectory: "./"
+        displayName: "npm ci"
+
+      - script: |
+          npm run lint
+        workingDirectory: "./"
+        displayName: "tslint"
+
+      - script: |
+          npm run validate:npmpack:win
+        workingDirectory: "./"
+        displayName: "Validate npm package installation"
+
+      - script: |
+          npm run vscode:pack
+        workingDirectory: "./"
+        displayName: "Validate Visual Studio Code extension package generation"
+
+      - script: |
+          npm uninstall -g azurite
+          npm run build
+          npm ci -g
+          azurite -v
+          azurite-blob -v
+          azurite-queue -v
+        workingDirectory: "./"
+        displayName: "Validate npm global installation from GitHub code base"
+
+  - job: azuritenodejsmac
+    displayName: Azurite Mac
+    pool:
+      vmImage: "macOS-10.13"
+    strategy:
+      matrix:
+        node_8_x:
+          node_version: 8.x
+        node_10_x:
+          node_version: 10.x
+        node_12_x:
+          node_version: 12.x
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: "$(node_version)"
+        displayName: "Install Node.js"
+
+      - script: |
+          npm ci
+        workingDirectory: "./"
+        displayName: "npm ci"
+
+      - script: |
+          npm run lint
+        workingDirectory: "./"
+        displayName: "tslint"
+
+      - script: |
+          npm run validate:npmpack:linux_mac
+        workingDirectory: "./"
+        displayName: "Validate npm package installation"
+
+      - script: |
+          npm run vscode:pack
+        workingDirectory: "./"
+        displayName: "Validate Visual Studio Code extension package generation"
+
+      - script: |
+          sudo npm uninstall -g azurite
+          npm run build
+          sudo npm install -g
+          azurite -v
+          azurite-blob -v
+          azurite-queue -v
+        workingDirectory: "./"
+        displayName: "Validate npm global installation from GitHub code base"
+
+  - job: docker
+    displayName: Docker Build
+    pool:
+      vmImage: "ubuntu-16.04"
+    steps:
+      - script: |
+          npm ci
+        workingDirectory: "./"
+        displayName: "npm ci"
+
+      - script: |
+          npm run docker:build
+        workingDirectory: "./"
+        displayName: "Build docker image"
+
+      - script: |
+          docker run xstoreazurite.azurecr.io/public/azure-storage/azurite:latest azurite -v
+          docker run xstoreazurite.azurecr.io/public/azure-storage/azurite:latest azurite-blob -v
+          docker run xstoreazurite.azurecr.io/public/azure-storage/azurite:latest azurite-queue -v
+        workingDirectory: "./"
+        displayName: "Validate docker image"
+
+  - job: governance
+    displayName: Component Governance Component Detection
+    pool:
+      vmImage: "ubuntu-16.04"
+    steps:
+      - task: ComponentGovernanceComponentDetection@0
+        inputs:
+          scanType: "Register"
+          verbosity: "Verbose"
+          alertWarningLevel: "High"
